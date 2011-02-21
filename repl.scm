@@ -24,7 +24,7 @@
 (define (print-obj obj)
   (cond
    [(string? obj) (display
-                   (string-append doublequote-char obj doublequote-char))]
+                  (string-append doublequote-char obj doublequote-char))]
    [(char? obj)   (display (string-append "#\\" (string obj)))]
    [else          (display obj)])
   (newline))
