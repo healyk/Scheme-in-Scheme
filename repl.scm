@@ -32,7 +32,5 @@
 ;; Entry point into the repl.  This will currently loop infinitely.
 (define (repl)
   (display prompt)
-  (let* [(input     (read-input))
-         (evaluated (vm-eval input))]
-    (print-obj evaluated)
-    (repl)))
+  (print-obj (vm-eval (read-input)))
+  (repl))
