@@ -10,6 +10,17 @@
 	     x))
        l))
 
+;; Returns a list of values from l which func returns true
+(define (filter func l)
+  (if (null? l)
+      '()
+      (append 
+       (if (func (car l))
+	   (list (car l))
+	   '())
+       (filter func (cdr l)))))
+
+;; Makes a new environment
 (define (make-env)
   '((defs )))
 
@@ -20,8 +31,8 @@
 	    (cdr (assq 'defs env))
 	    (list (list symbol form)))))
 
-#;
+;; Gets the define for symbol in environment env
 (define (env-get-def env symbol)
-  (filter (lambda (x)
-	    (equal? (car x) symbol))
-	  (assq 'defs env)))
+  (cadr
+   (assq symbol 
+	 (cadr (assq 'defs env)))))
