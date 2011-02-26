@@ -2,23 +2,15 @@
 ;;;;
 ;;;; Environment management.
 
+(use srfi-1)
+
 ;; Replaces the value with key in list l
 (define (replace l key value)
   (map (lambda (x)
-	 (if (equal? (car x) key) 
-	     (list key value)
+	 (if (equal? (car x) key)
+             (list key value)
 	     x))
        l))
-
-;; Returns a list of values from l which func returns true
-(define (filter func l)
-  (if (null? l)
-      '()
-      (append 
-       (if (func (car l))
-	   (list (car l))
-	   '())
-       (filter func (cdr l)))))
 
 ;; Makes a new environment
 (define (make-env)
@@ -31,8 +23,15 @@
 	    (cdr (assq 'defs env))
 	    (list (list symbol form)))))
 
+(define (env-get-defs env)
+  (let ((defs (assq 'defs env)))
+    (if (equal? (length defs) 1)
+        '()
+        (cadr defs))))
+
 ;; Gets the define for symbol in environment env
 (define (env-get-def env symbol)
-  (cadr
-   (assq symbol 
-	 (cadr (assq 'defs env)))))
+  (let ((form (assq symbol (env-get-defs env))))
+    (if form
+        (cadr form)
+        'error)))
