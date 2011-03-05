@@ -25,7 +25,7 @@
                   '())))
 
     (if (not (equal? form 'error))
-        (values input (env-add-def env (cadr input) form))
+        (values input (env/add-def! env (cadr input) form))
         (values 'error env))))
 
 ;; Evaluates an input string
@@ -36,7 +36,7 @@
    [(null? input)    (values input env)]
    [(char? input)    (values input env)]
    [(boolean? input) (values input env)]
-   [(symbol? input)  (values (env-get-def env input) env)]
+   [(symbol? input)  (values (env/get-def env input) env)]
    
    ; Process define forms
    [(and (list? input)
