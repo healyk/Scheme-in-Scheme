@@ -2,7 +2,9 @@
 ;;;;
 ;;;; Runs a read evaluate print loop function in Scheme for Scheme.
 
+(use srfi-1)
 (load "env.scm")
+(load "vm.scm")
 
 ;;; Constants
 (define prompt "-: ")
@@ -23,14 +25,25 @@
   (let ((form (if (> (length input) 2)
                   (vm-eval (caddr input) env)
                   '())))
-
     (if (not (equal? form 'error))
         (values input (env/add-def! env (cadr input) form))
         (values 'error env))))
 
+;; Executes a form.  Input is expected to be a list with the executable symbol
+;; being the first element.  All other elements in input are evaluated and
+;; placed on the environment stack.
+(define (exec-form input env)
+  (for-each (lambda (x) (exec-instruction! env 'push x))
+	    (cdr input))
+  (exec-instruction! env (car input))
+  (exec-instruction! env 'pop))
+
 ;; Evaluates an input string
 (define (vm-eval input env)
   (cond
+   [(and (symbol? input)
+	 (equal? input 'quit)) (values 'quit env)]
+   
    [(string? input)  (values input env)]
    [(number? input)  (values input env)]
    [(null? input)    (values input env)]
@@ -42,6 +55,11 @@
    [(and (list? input)
          (define-form? input))
     (define-form input env)]
+
+   ; Process execution of lists
+   [(and (list? input)
+	 (instruction? (car input))) 
+    (values (exec-form input env) env)]
    [else 'error]))
 
 ;; Prints objects out to stdout
@@ -60,5 +78,6 @@
     (display prompt)
     (let-values (((result new-env) (vm-eval (read-input) env)))
       (print-obj result)
-      (repl-inner new-env)))
+      (if (not (equal? result 'quit))
+	  (repl-inner new-env))))
   (repl-inner (make-env)))

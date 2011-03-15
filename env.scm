@@ -8,18 +8,10 @@
 
 ;; Defines a lisp environment.
 (define-record-type lisp-env
-  (make-lisp-env defs local-vars)
-  lis-env?
-  (defs         lisp-env/get-defs)
-  (local-vars   lisp-env/get-local-vars))
-
-;; Replaces the value with key in list l
-(define (replace l key value)
-  (map (lambda (x)
-	 (if (equal? (car x) key)
-             (list key value)
-	     x))
-       l))
+  (make-lisp-env defs stack)
+  lisp-env?
+  (defs          lisp-env/get-defs)
+  (stack         lisp-env/get-stack lisp-env/set-stack!))
 
 ;; Makes a new environment
 (define (make-env)
@@ -32,3 +24,13 @@
 
 (define (env/get-def env symbol)
   (hash-table-ref/default (lisp-env/get-defs env) symbol 'error))
+
+;;; Stack functions
+(define (env/pop! env)
+  (let ((element (car (lisp-env/get-stack env))))
+    (lisp-env/set-stack! env (cdr (lisp-env/get-stack env)))
+    element))
+
+(define (env/push! env val)
+  (lisp-env/set-stack! env (append (list val) (lisp-env/get-stack env))))
+
