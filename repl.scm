@@ -33,22 +33,26 @@
 ;; being the first element.  All other elements in input are evaluated and
 ;; placed on the environment stack.
 (define (exec-form input env)
-  (for-each (lambda (x) (exec-instruction! env 'push x))
+  (for-each (lambda (x) (exec-instruction! env 'push (vm-eval x env)))
 	    (cdr input))
   (exec-instruction! env (car input))
   (exec-instruction! env 'pop))
 
+;; Stolen from: http://pointlessprogramming.wordpress.com/2011/02/24/lispy-in-chicken-self-evaluating-values/
+(define (self-evaulating? expr)
+  (or (string? expr)
+      (number? expr)
+      (null? expr)
+      (char? expr)
+      (boolean? expr)))
+
 ;; Evaluates an input string
 (define (vm-eval input env)
   (cond
+   ; Semi-hack used to exit the repl
    [(and (symbol? input)
-	 (equal? input 'quit)) (values 'quit env)]
-   
-   [(string? input)  (values input env)]
-   [(number? input)  (values input env)]
-   [(null? input)    (values input env)]
-   [(char? input)    (values input env)]
-   [(boolean? input) (values input env)]
+	 (equal? input 'quit)) (values 'quit env)]   
+   [(self-evaulating? input) (values input env)]
    [(symbol? input)  (values (env/get-def env input) env)]
    
    ; Process define forms
