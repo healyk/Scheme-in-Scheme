@@ -11,7 +11,7 @@ Here are links to my blog where I'm currently explaining each part.  It's sort o
 
 [Part 2. Simple defines](http://codingninja.wordpress.com/2011/02/26/scheme-in-scheme-part-2-simple-defines/)
 
-[Part 3. Arithetic](http://codingninja.wordpress.com/2011/03/19/scheme-in-scheme-part-3-arithmetic/)
+[Part 3. Arithmetic](http://codingninja.wordpress.com/2011/03/19/scheme-in-scheme-part-3-arithmetic/)
 
 # License
 
