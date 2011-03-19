@@ -10,3 +10,9 @@ Here are links to my blog where I'm currently explaining each part.  It's sort o
 [Part 1. Introduction](http://codingninja.wordpress.com/2011/02/19/simple-scheme-part-1-introduction/)
 
 [Part 2. Simple defines](http://codingninja.wordpress.com/2011/02/26/scheme-in-scheme-part-2-simple-defines/)
+
+[Part 3. Arithetic](http://codingninja.wordpress.com/2011/03/19/scheme-in-scheme-part-3-arithmetic/)
+
+# License
+
+If you really want to use this somewhere I'm licensing it under the [MIT License](http://www.opensource.org/licenses/mit-license.html).
