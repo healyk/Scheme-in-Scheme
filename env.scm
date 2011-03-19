@@ -25,7 +25,11 @@
 (define (env/get-def env symbol)
   (hash-table-ref/default (lisp-env/get-defs env) symbol 'error))
 
+;;;
 ;;; Stack functions
+;;;
+;;; These will push/pop objects off the environment stack.
+;;;
 (define (env/pop! env)
   (let ((element (car (lisp-env/get-stack env))))
     (lisp-env/set-stack! env (cdr (lisp-env/get-stack env)))
@@ -34,3 +38,17 @@
 (define (env/push! env val)
   (lisp-env/set-stack! env (append (list val) (lisp-env/get-stack env))))
 
+;; Checks a list to see if the first symbol is define
+(define (define-form? input)
+  (and (not (null? input))
+       (equal? (car input) (string->symbol "define"))
+       (>= (length input) 2)))
+
+;; Takes in a define and adds it to the environment
+(define (define-form input env)
+  (let ((form (if (> (length input) 2)
+                  (vm-eval (caddr input) env)
+                  '())))
+    (if (not (equal? form 'error))
+        (values input (env/add-def! env (cadr input) form))
+        (values 'error env))))

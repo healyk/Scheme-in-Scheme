@@ -14,21 +14,6 @@
 (define (read-input)
   (read))
 
-;; Checks a list to see if the first symbol is define
-(define (define-form? input)
-  (and (not (null? input))
-       (equal? (car input) (string->symbol "define"))
-       (>= (length input) 2)))
-
-;; Takes in a define and adds it to the environment
-(define (define-form input env)
-  (let ((form (if (> (length input) 2)
-                  (vm-eval (caddr input) env)
-                  '())))
-    (if (not (equal? form 'error))
-        (values input (env/add-def! env (cadr input) form))
-        (values 'error env))))
-
 ;; Executes a form.  Input is expected to be a list with the executable symbol
 ;; being the first element.  All other elements in input are evaluated and
 ;; placed on the environment stack.
@@ -82,6 +67,8 @@
     (display prompt)
     (let-values (((result new-env) (vm-eval (read-input) env)))
       (print-obj result)
+      ; TODO: Seperate repl command logic from eval logic.  The repl should
+      ; be catching this before passing to vm-eval.
       (if (not (equal? result 'quit))
 	  (repl-inner new-env))))
   (repl-inner (make-env)))
