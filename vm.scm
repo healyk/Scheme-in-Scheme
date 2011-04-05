@@ -3,23 +3,46 @@
 ;;;; Contains virtual machine constructs and instructions.
 ;;;; Author: Kris Healy
 
-;; Executes a form.  Input is expected to be a list with the executable symbol
-;; being the first element.  All other elements in input are evaluated and
-;; placed on the environment stack.
-(define (exec-form input env)
-  (for-each (lambda (x) (exec-instruction! env 'push (vm-eval x env)))
-	    (reverse (cdr input)))
-  (exec-instruction! env 'push (length (cdr input))) ; Length of arguments
-  (exec-instruction! env (car input))
-  (exec-instruction! env 'pop))
-
 ;; Stolen from: http://pointlessprogramming.wordpress.com/2011/02/24/lispy-in-chicken-self-evaluating-values/
-(define (self-evaulating? expr)
+(define (self-evaluating? expr)
   (or (string? expr)
       (number? expr)
       (null? expr)
       (char? expr)
       (boolean? expr)))
+
+;; Takes in a Scheme form for input and returns a list of instructions.
+(define (compile-form input)
+  ; Creates the pushes/pops for individual arguments
+  (define (compile-arg-pushes args)
+    (if (null? args)
+        '()
+        (let ((arg (car args)))
+          (append (compile-arg-pushes (cdr args))
+                  (if (self-evaluating? arg)
+                      `((push ,(car args)))
+                      (compile-form arg))))))
+  
+  (let ((form-name (car input))
+        (args      (cdr input)))
+    (append (compile-arg-pushes args)
+            `((push ,(length args)))  ; Push the number of arguments
+            (case form-name
+              [(+) '((add))]
+              [(-) '((sub))]
+              [(*) '((mul))]
+              [(/) '((div))]
+              [else (list (car input))]))))
+
+;; Executes a compiled set of instructions.
+(define (exec-compiled-form compiled-form env)
+  (for-each (lambda (instruction)
+              (if (equal? (length instruction) 1)
+                  (exec-instruction! env (car instruction))
+                  (exec-instruction! env (car instruction)
+                                         (cadr instruction))))
+            compiled-form)
+  (exec-instruction! env 'pop))
 
 ;; Evaluates an input string
 (define (vm-eval input env)
@@ -27,7 +50,7 @@
    ; Semi-hack used to exit the repl
    [(and (symbol? input)
 	 (equal? input 'quit)) (values 'quit env)]   
-   [(self-evaulating? input) (values input env)]
+   [(self-evaluating? input) (values input env)]
    [(symbol? input)  (values (env/get-def env input) env)]
    
    ; Process define forms
@@ -37,8 +60,8 @@
 
    ; Process execution of built-in instructions
    [(and (list? input)
-	 (instruction? (car input))) 
-    (values (exec-form input env) env)]
+	 (instruction? (car input)))
+    (values (exec-compiled-form (compile-form input) env) env)]
    
    [else 'error]))
 
@@ -55,10 +78,10 @@
 
 (define (exec-instruction! env instruction . arg)
   (case instruction
-    [(+)    (instruction/arithmetic env instruction)]
-    [(-)    (instruction/arithmetic env instruction)]
-    [(*)    (instruction/arithmetic env instruction)]
-    [(/)    (instruction/arithmetic env instruction)]
+    [(add)  (instruction/arithmetic env instruction)]
+    [(sub)  (instruction/arithmetic env instruction)]
+    [(mul)  (instruction/arithmetic env instruction)]
+    [(div)  (instruction/arithmetic env instruction)]
     [(push) (instruction/push env (car arg))]
     [(pop)  (instruction/pop env)]
     [else 'error]))
@@ -77,10 +100,10 @@
            (num2 (if (> arg-length 0) (env/pop! env) 0)))
       (env/push! env
                  (case op
-                   [(+) (+ num1 num2)]
-                   [(-) (- num1 num2)]
-                   [(*) (* num1 num2)]
-                   [(/) (/ num1 num2)]))
+                   [(add) (+ num1 num2)]
+                   [(sub) (- num1 num2)]
+                   [(mul) (* num1 num2)]
+                   [(div) (/ num1 num2)]))
       ; Now the result is on the stack.  If we still have arguments
       ; to add then re-iterate the entire process
       (if (> arg-length 2)
