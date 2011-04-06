@@ -11,7 +11,9 @@
 (define (compile-arg arg)
   (if (self-evaluating? arg)
       `((push ,arg))
-      (compile-form arg)))
+      (if (symbol? arg)
+          `((get ,arg))
+          (compile-form arg))))
 
 ;; Compiles the pushes for arithemtic args.  This will, at most, push two
 ;; arguments onto the stack.  If arguments are lacking, depending on the

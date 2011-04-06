@@ -64,12 +64,18 @@
     [(mul)  (instruction/arithmetic env instruction)]
     [(div)  (instruction/arithmetic env instruction)]
     [(push) (instruction/push env (car arg))]
+    [(get)  (instruction/get env (car arg))]
     [(pop)  (instruction/pop env)]
     [else 'error]))
+
+;;; Individual instruction functions
 
 (define (instruction/push env x)
   (env/push! env x)
   env)
+
+(define (instruction/get env symbol)
+  (env/push! env (env/get-def env symbol)))
 
 ;; Returns 2 values - the pop'ed value and then the environment
 (define (instruction/pop env)
