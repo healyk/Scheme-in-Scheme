@@ -2,10 +2,6 @@
 ;;;;
 ;;;; Environment management.
 
-(use srfi-1)
-(use srfi-9)
-(use srfi-69)
-
 ;; Defines a lisp environment.
 (define-record-type lisp-env
   (make-lisp-env defs stack)
@@ -37,6 +33,9 @@
 
 (define (env/push! env val)
   (lisp-env/set-stack! env (append (list val) (lisp-env/get-stack env))))
+
+(define (env/stack-empty? env)
+  (null? (lisp-env/get-stack env)))
 
 ;; Checks a list to see if the first symbol is define
 (define (define-form? input)

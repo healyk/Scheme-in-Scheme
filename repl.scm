@@ -3,6 +3,9 @@
 ;;;; Runs a read evaluate print loop function in Scheme for Scheme.
 
 (use srfi-1)
+(use srfi-9)
+(use srfi-69)
+
 (load "env.scm")
 (load "vm.scm")
 
@@ -33,5 +36,6 @@
       ; TODO: Seperate repl command logic from eval logic.  The repl should
       ; be catching this before passing to vm-eval.
       (if (not (equal? result 'quit))
-	  (repl-inner new-env))))
+	  (repl-inner new-env)
+          '())))
   (repl-inner (make-env)))

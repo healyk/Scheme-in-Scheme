@@ -3,6 +3,8 @@
 ;;;; Contains virtual machine constructs and instructions.
 ;;;; Author: Kris Healy
 
+(load "compile.scm")
+
 ;; Stolen from: http://pointlessprogramming.wordpress.com/2011/02/24/lispy-in-chicken-self-evaluating-values/
 (define (self-evaluating? expr)
   (or (string? expr)
@@ -10,29 +12,6 @@
       (null? expr)
       (char? expr)
       (boolean? expr)))
-
-;; Takes in a Scheme form for input and returns a list of instructions.
-(define (compile-form input)
-  ; Creates the pushes/pops for individual arguments
-  (define (compile-arg-pushes args)
-    (if (null? args)
-        '()
-        (let ((arg (car args)))
-          (append (compile-arg-pushes (cdr args))
-                  (if (self-evaluating? arg)
-                      `((push ,(car args)))
-                      (compile-form arg))))))
-  
-  (let ((form-name (car input))
-        (args      (cdr input)))
-    (append (compile-arg-pushes args)
-            `((push ,(length args)))  ; Push the number of arguments
-            (case form-name
-              [(+) '((add))]
-              [(-) '((sub))]
-              [(*) '((mul))]
-              [(/) '((div))]
-              [else (list (car input))]))))
 
 ;; Executes a compiled set of instructions.
 (define (exec-compiled-form compiled-form env)
@@ -42,7 +21,9 @@
                   (exec-instruction! env (car instruction)
                                          (cadr instruction))))
             compiled-form)
-  (exec-instruction! env 'pop))
+  (if (not (env/stack-empty? env))
+      (exec-instruction! env 'pop)
+      'nothing))
 
 ;; Evaluates an input string
 (define (vm-eval input env)
@@ -70,7 +51,7 @@
 ;;; result as well as the environment.
 
 (define instruction-symbols
-  '(+ push pop - * / call))
+  '(+ push pop - * /))
 
 (define (instruction? sym)
   (any (lambda (x) (equal? x sym))
@@ -95,20 +76,12 @@
   (values (env/pop! env) env))
 
 (define (instruction/arithmetic env op)
-  (let ((arg-length (env/pop! env)))
-    (let* ((num1 (if (> arg-length 1) (env/pop! env) 0))
-           (num2 (if (> arg-length 0) (env/pop! env) 0)))
-      (env/push! env
-                 (case op
+  (let* ((num2   (env/pop! env))
+         (num1   (env/pop! env))
+         (result (case op
                    [(add) (+ num1 num2)]
                    [(sub) (- num1 num2)]
                    [(mul) (* num1 num2)]
-                   [(div) (/ num1 num2)]))
-      ; Now the result is on the stack.  If we still have arguments
-      ; to add then re-iterate the entire process
-      (if (> arg-length 2)
-          (begin
-            (env/push! env (- arg-length 1))
-            (instruction/arithmetic env op))
-          ; No more arguments - just ignore this case
-          #f))))
+                   [(div) (/ num1 num2)])))
+    (env/push! env result))
+  env)
