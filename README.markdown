@@ -3,6 +3,10 @@ Scheme interpreter written in Scheme.
 
 Read about it [here](http://codingninja.wordpress.com/category/programming/scheme/scheme-in-scheme/)
 
+Note that this is Chicken Scheme specific.  If you want to use/run this in 
+another scheme implementation replace the (use ...) statements in repl.scm 
+with an appropriate loading mechanism for the SRFIs.
+
 ## Individual Links
 
 Here are links to my blog where I'm currently explaining each part.  It's sort of a thought dump of what I'm doing.  It is somewhat interesting to see the evolution of the software through each iteration.
