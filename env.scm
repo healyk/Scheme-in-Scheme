@@ -37,17 +37,3 @@
 (define (env/stack-empty? env)
   (null? (lisp-env/get-stack env)))
 
-;; Checks a list to see if the first symbol is define
-(define (define-form? input)
-  (and (not (null? input))
-       (equal? (car input) (string->symbol "define"))
-       (>= (length input) 2)))
-
-;; Takes in a define and adds it to the environment
-(define (define-form input env)
-  (let ((form (if (> (length input) 2)
-                  (vm-eval (caddr input) env)
-                  '())))
-    (if (not (equal? form 'error))
-        (values input (env/add-def! env (cadr input) form))
-        (values 'error env))))

@@ -33,15 +33,20 @@
                   (append-map (lambda (x) `(,@(compile-arg x) (,op)))
                               (drop args 2)))]))
 
+(define (compile-define binding args)
+  (if (symbol? binding)
+      ; If the binding is a symbol there should only be one other element
+      ; in the list (define binding arg)
+      `(,@(compile-arg (car args)) (define ,binding))))
+
 ;; Takes in a Scheme form for input and returns a list of instructions.
 (define (compile-form input)
-  (if (self-evaluating? input)
-      input
-      (let ((form-name (car input))
-            (args      (cdr input)))
-        (case form-name
-          [(+) (compile-arithmetic 'add args)]
-          [(-) (compile-arithmetic 'sub args)]
-          [(*) (compile-arithmetic 'mul args)]
-          [(/) (compile-arithmetic 'div args)]
-          [else (list (car input))]))))
+  (let ((form-name (car input))
+        (args      (cdr input)))
+    (case form-name
+      [(+) (compile-arithmetic 'add args)]
+      [(-) (compile-arithmetic 'sub args)]
+      [(*) (compile-arithmetic 'mul args)]
+      [(/) (compile-arithmetic 'div args)]
+      [(define) (compile-define (car args) (cdr args))]
+      [else (list (car input))])))

@@ -34,11 +34,6 @@
    [(self-evaluating? input) (values input env)]
    [(symbol? input)  (values (env/get-def env input) env)]
    
-   ; Process define forms
-   [(and (list? input)
-         (define-form? input))
-    (define-form input env)]
-
    ; Process execution of built-in instructions
    [(and (list? input)
 	 (instruction? (car input)))
@@ -51,7 +46,7 @@
 ;;; result as well as the environment.
 
 (define instruction-symbols
-  '(+ push pop - * /))
+  '(+ push pop - * / define))
 
 (define (instruction? sym)
   (any (lambda (x) (equal? x sym))
@@ -59,27 +54,35 @@
 
 (define (exec-instruction! env instruction . arg)
   (case instruction
-    [(add)  (instruction/arithmetic env instruction)]
-    [(sub)  (instruction/arithmetic env instruction)]
-    [(mul)  (instruction/arithmetic env instruction)]
-    [(div)  (instruction/arithmetic env instruction)]
-    [(push) (instruction/push env (car arg))]
-    [(get)  (instruction/get env (car arg))]
-    [(pop)  (instruction/pop env)]
+    [(add)    (instruction/arithmetic env instruction)]
+    [(sub)    (instruction/arithmetic env instruction)]
+    [(mul)    (instruction/arithmetic env instruction)]
+    [(div)    (instruction/arithmetic env instruction)]
+    [(push)   (instruction/push env (car arg))]
+    [(get)    (instruction/get env (car arg))]
+    [(define) (instruction/define env (car arg))]
+    [(pop)    (instruction/pop env)]
     [else 'error]))
 
+;;;
 ;;; Individual instruction functions
+;;;
 
 (define (instruction/push env x)
   (env/push! env x)
   env)
 
 (define (instruction/get env symbol)
-  (env/push! env (env/get-def env symbol)))
+  (env/push! env (env/get-def env symbol))
+  env)
 
 ;; Returns 2 values - the pop'ed value and then the environment
 (define (instruction/pop env)
   (values (env/pop! env) env))
+
+(define (instruction/define env symbol)
+  (env/add-def! env symbol (env/pop! env))
+  env)
 
 (define (instruction/arithmetic env op)
   (let* ((num2   (env/pop! env))
