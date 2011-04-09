@@ -23,9 +23,9 @@
     [(0) `((push ,(default-arithmetic-val op))
            (push ,(default-arithmetic-val op))
            (,op))]
-    [(1)  `(,@(compile-arg (car args))
-            (push ,(default-arithmetic-val op))
-            (,op))]
+    [(1) `(,@(compile-arg (car args))
+           (push ,(default-arithmetic-val op))
+           (,op))]
     [(2) `(,@(compile-arg (car args))
            ,@(compile-arg (cadr args))
            (,op))]
