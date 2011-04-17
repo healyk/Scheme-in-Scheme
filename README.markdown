@@ -17,7 +17,7 @@ Here are links to my blog where I'm currently explaining each part.  It's sort o
 
 [Part 3. Arithmetic](http://codingninja.wordpress.com/2011/03/19/scheme-in-scheme-part-3-arithmetic/)
 
-[Part 4. The Virtual Macine](http://codingninja.wordpress.com/2011/04/09/scheme-in-scheme-part-4-the-virtual-machine/)
+[Part 4. The Virtual Machine](http://codingninja.wordpress.com/2011/04/09/scheme-in-scheme-part-4-the-virtual-machine/)
 
 # License
 
